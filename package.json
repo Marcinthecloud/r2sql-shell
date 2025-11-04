@@ -1,11 +1,11 @@
 {
-  "name": "r2sql",
+  "name": "r2sql-shell",
   "version": "1.0.0",
   "description": "Interactive REPL for querying R2 Data Catalog with R2 SQL",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "r2sql": "./dist/index.js"
+    "r2sql-shell": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -17,7 +17,7 @@
     "package:macos": "npm run bundle && pkg dist/bundle.cjs --targets node18-macos-x64 --output ./bin/r2sql-shell-macos",
     "package:linux": "npm run bundle && pkg dist/bundle.cjs --targets node18-linux-x64 --output ./bin/r2sql-shell-linux",
     "package:windows": "npm run bundle && pkg dist/bundle.cjs --targets node18-win-x64 --output ./bin/r2sql-shell-win.exe",
-    "package:all": "npm run bundle && pkg dist/bundle.cjs --targets node18-macos-x64,node18-linux-x64,node18-win-x64 --out-path ./bin"
+    "package:all": "npm run package:macos && npm run package:linux && npm run package:windows"
   },
   "keywords": [
     "r2",

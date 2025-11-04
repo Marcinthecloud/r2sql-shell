@@ -53,7 +53,7 @@ R2_BUCKET_NAME=your_bucket_name_here
 CLOUDFLARE_API_TOKEN=your_api_token_here
 ```
 
-OR simply start `r2sql` for the first time to set it up
+OR simply start `r2sql-shell` for the first time to set it up
 
 ### Getting Your Credentials
 
@@ -67,13 +67,16 @@ OR simply start `r2sql` for the first time to set it up
 
 ### Via Homebrew
 
+**Option 1 (Recommended - One command):**
 ```bash
-brew tap YOUR_USERNAME/r2sql
-brew install r2sql
-r2sql
+brew install marcinthecloud/r2sql-shell/r2sql-shell
 ```
 
-Replace `YOUR_USERNAME` with the GitHub username where the repository is published.
+**Option 2 (Tap first):**
+```bash
+brew tap marcinthecloud/r2sql-shell
+brew install r2sql-shell
+```
 
 For publishing instructions, see [HOMEBREW_SETUP.md](HOMEBREW_SETUP.md).
 
@@ -100,11 +103,11 @@ For publishing instructions, see [HOMEBREW_SETUP.md](HOMEBREW_SETUP.md).
    npm link
    ```
 
-   Now you can run `r2sql` from anywhere!
+   Now you can run `r2sql-shell` from anywhere!
 
 ### Download Pre-built Binary (Coming Soon)
 
-Download the latest release for your platform from the [releases page](https://github.com/YOUR_USERNAME/r2sql-shell/releases):
+Download the latest release for your platform from the [releases page](https://github.com/marcinthecloud/r2sql-shell/releases):
 - macOS (Intel/Apple Silicon)
 - Linux (x64)
 - Windows (x64)
@@ -116,7 +119,7 @@ Download the latest release for your platform from the [releases page](https://g
 Just run the command and you'll be prompted for your credentials:
 
 ```bash
-r2sql
+r2sql-shell
 # or if running from source:
 npm start
 ```
@@ -124,7 +127,7 @@ npm start
 ### Option 2: Using Command-Line Arguments
 
 ```bash
-r2sql --account-id YOUR_ACCOUNT_ID --bucket YOUR_BUCKET --token YOUR_API_TOKEN
+r2sql-shell --account-id YOUR_ACCOUNT_ID --bucket YOUR_BUCKET --token YOUR_API_TOKEN
 ```
 
 ### Option 3: Using Environment Variables
@@ -146,7 +149,7 @@ CLOUDFLARE_API_TOKEN=your_api_token_here
 Then run:
 
 ```bash
-r2sql
+r2sql-shell
 ```
 
 ## Usage
@@ -154,7 +157,7 @@ r2sql
 ### Command-Line Options
 
 ```bash
-r2sql [options]
+r2sql-shell [options]
 
 Options:
   --account-id <id>        Cloudflare Account ID
@@ -173,22 +176,22 @@ Options:
 
 ```bash
 # Start with interactive prompt for credentials
-r2sql
+r2sql-shell
 
 # Start in TUI mode with credentials
-r2sql --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN
 
 # Execute a query on startup
-r2sql -e "SELECT * FROM my_namespace.my_table LIMIT 10"
+r2sql-shell -e "SELECT * FROM my_namespace.my_table LIMIT 10"
 
 # Enable query history logging
-r2sql --history
+r2sql-shell --history
 
 # Start in simple REPL mode
-r2sql --simple
+r2sql-shell --simple
 
 # Combine options
-r2sql --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN \
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN \
       -e "SELECT * FROM default.logs LIMIT 5" --history
 ```
 
@@ -337,7 +340,7 @@ npm start
 
 ### Creating Executables
 
-To package r2sql as a standalone executable:
+To package r2sql-shell as a standalone executable:
 
 ```bash
 # Package for your current platform

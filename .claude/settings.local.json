@@ -25,7 +25,9 @@
       "Bash(timeout 2 bin/r2sql-shell-macos:*)",
       "Bash(timeout 2 ./bin/r2sql-shell-macos:*)",
       "Bash(npm run build:macos:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git rm:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []

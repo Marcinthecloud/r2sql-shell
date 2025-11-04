@@ -9,7 +9,7 @@ import chalk from 'chalk';
 const program = new Command();
 
 program
-  .name('r2sql')
+  .name('r2sql-shell')
   .description('Interactive shell for querying R2 Data Catalog with R2 SQL')
   .version('1.0.0')
   .option('--account-id <id>', 'Cloudflare Account ID')
@@ -22,25 +22,25 @@ program
   .option('--simple', 'Use simple REPL mode instead of TUI')
   .addHelpText('after', `
 Examples:
-  $ r2sql
+  $ r2sql-shell
     Start with interactive prompts for credentials
 
-  $ r2sql --account-id abc123 --bucket my-bucket --token xyz789
+  $ r2sql-shell --account-id abc123 --bucket my-bucket --token xyz789
     Start with credentials from command line
 
-  $ r2sql -e "SELECT * FROM default.logs LIMIT 10"
+  $ r2sql-shell -e "SELECT * FROM default.logs LIMIT 10"
     Execute a query on startup (uses .env for credentials)
 
-  $ r2sql --account-id abc123 --bucket my-bucket --token xyz789 -e "SELECT * FROM default.logs"
+  $ r2sql-shell --account-id abc123 --bucket my-bucket --token xyz789 -e "SELECT * FROM default.logs"
     Combine credentials and query execution
 
-  $ r2sql --history
+  $ r2sql-shell --history
     Enable query history logging to r2sql-history.txt
 
-  $ r2sql --debug
+  $ r2sql-shell --debug
     Enable debug logging to r2sql-debug.log
 
-  $ r2sql --simple
+  $ r2sql-shell --simple
     Use simple REPL mode instead of TUI
 
 Configuration:
