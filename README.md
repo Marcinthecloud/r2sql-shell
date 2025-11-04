@@ -78,8 +78,6 @@ brew tap marcinthecloud/r2sql-shell
 brew install r2sql-shell
 ```
 
-For publishing instructions, see [HOMEBREW_SETUP.md](HOMEBREW_SETUP.md).
-
 ### From Source
 
 1. **Clone the repository**:
@@ -208,6 +206,10 @@ The shell will work once you have tables in the catalog. You can always test the
 
 The TUI mode features vim-style navigation and keyboard shortcuts:
 
+#### Basics
+- use `Esc` to exit focus back to navigation mode
+- use `i` to enter insert mode
+
 #### Navigation
 - `h` or `←` - Focus sidebar (schema tree)
 - `l` or `→` or `Enter` - Expand/collapse namespace or select table
@@ -216,22 +218,16 @@ The TUI mode features vim-style navigation and keyboard shortcuts:
 - `g` - Jump to top
 - `G` - Jump to bottom
 
-#### Modes
-- `i` - Enter insert mode (when in query editor)
-- `Esc` - Return to normal mode
-- Normal mode: Navigate and use shortcuts
-- Insert mode: Edit queries
-
 #### Tabs
-- `Alt+2` - Query editor
-- `Alt+3` - Focus results pane
-- `Alt+4` - Query history
-- `Alt+5` - Favorites (coming soon)
+- `2` - Query editor
+- `3` - Focus results pane
+- `4` - Query history
+- `5` - Favorites (coming soon)
 
 #### Query Operations
-- `Ctrl+E` - Execute current query (works in both normal and insert mode)
-- `Ctrl+F` - Format SQL query
+- `Ctrl+E` or `x` - Execute current query (works in both normal and insert mode)
 - Navigate to a table in the sidebar and press `Enter` to insert it into your query
+- `Ctrl+L` clears the SQL editor
 
 #### Results View
 - `t` - Toggle between table and list view
