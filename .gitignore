@@ -32,6 +32,6 @@ r2sql-debug.log
 test*
 
 #Stuff you also don't need
-PUBLUSH*
+PUBLISH_CHECKLIST.md
 HOMEBREW*
 get-sha256.sh
