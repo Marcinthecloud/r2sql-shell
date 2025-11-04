@@ -8,6 +8,7 @@ export function loadConfig(options?: {
   accountId?: string;
   bucketName?: string;
   apiToken?: string;
+  debugEnabled?: boolean;
 }): R2SQLConfig {
   const accountId = options?.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
   const bucketName = options?.bucketName || process.env.R2_BUCKET_NAME;
@@ -32,10 +33,11 @@ export function loadConfig(options?: {
     apiToken,
     warehouse,
     catalogEndpoint,
+    debugEnabled: options?.debugEnabled || false,
   };
 }
 
-export async function promptForConfig(): Promise<R2SQLConfig> {
+export async function promptForConfig(debugEnabled?: boolean): Promise<R2SQLConfig> {
   const answers = await inquirer.prompt([
     {
       type: 'input',
@@ -58,6 +60,14 @@ export async function promptForConfig(): Promise<R2SQLConfig> {
     },
   ]);
 
+  // Clean up stdin after inquirer to prevent double input issues
+  // Remove all listeners and reset terminal state
+  process.stdin.removeAllListeners();
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(false);
+  }
+  process.stdin.pause();
+
   const warehouse = `${answers.accountId}_${answers.bucketName}`;
   const catalogEndpoint = `https://catalog.cloudflarestorage.com/${answers.accountId}/${answers.bucketName}`;
 
@@ -67,5 +77,6 @@ export async function promptForConfig(): Promise<R2SQLConfig> {
     apiToken: answers.apiToken,
     warehouse,
     catalogEndpoint,
+    debugEnabled: debugEnabled || false,
   };
 }

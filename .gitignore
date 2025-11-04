@@ -25,7 +25,7 @@ npm-debug.log*
 
 # History
 .r2sql_history
-r2-sql-history.txt
+r2sql-history.txt
 r2sql-debug.log
 
 #Testing/debugging

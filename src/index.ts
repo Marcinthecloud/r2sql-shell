@@ -16,7 +16,8 @@ program
   .option('--bucket <name>', 'R2 Bucket Name')
   .option('--token <token>', 'Cloudflare API Token')
   .option('-e, --execute <query>', 'Execute a SQL query on startup')
-  .option('--history [enabled]', 'Save query history to r2-sql-history.txt (default: false)', false)
+  .option('--history [enabled]', 'Save query history to r2sql-history.txt', false)
+  .option('--debug', 'Enable debug logging to r2sql-debug.log', false)
   .option('--tui', 'Use TUI mode (default)', true)
   .option('--simple', 'Use simple REPL mode instead of TUI')
   .addHelpText('after', `
@@ -27,14 +28,17 @@ Examples:
   $ r2sql --account-id abc123 --bucket my-bucket --token xyz789
     Start with credentials from command line
 
-  $ r2sql -e "SELECT * FROM logs LIMIT 10"
+  $ r2sql -e "SELECT * FROM default.logs LIMIT 10"
     Execute a query on startup (uses .env for credentials)
 
-  $ r2sql --account-id abc123 --bucket my-bucket --token xyz789 -e "SELECT COUNT(*) FROM logs"
+  $ r2sql --account-id abc123 --bucket my-bucket --token xyz789 -e "SELECT * FROM default.logs"
     Combine credentials and query execution
 
   $ r2sql --history
-    Enable query history logging to r2-sql-history.txt
+    Enable query history logging to r2sql-history.txt
+
+  $ r2sql --debug
+    Enable debug logging to r2sql-debug.log
 
   $ r2sql --simple
     Use simple REPL mode instead of TUI
@@ -47,7 +51,7 @@ Configuration:
 
   Priority: Command-line args > Environment variables > Interactive prompts
 
-For more information, visit: https://github.com/YOUR_USERNAME/r2sql-shell
+For more information, visit: https://github.com/marcinthecloud/r2sql-shell
 `)
   .action(async (options) => {
     try {
@@ -59,19 +63,22 @@ For more information, visit: https://github.com/YOUR_USERNAME/r2sql-shell
           accountId: options.accountId,
           bucketName: options.bucket,
           apiToken: options.token,
+          debugEnabled: options.debug,
         });
       } catch (error) {
         // If config is missing and no args provided, prompt interactively
         if (!options.accountId && !options.bucket && !options.token) {
           console.log(chalk.yellow('No configuration found. Let\'s get started!\n'));
-          config = await promptForConfig();
+          config = await promptForConfig(options.debug);
+          // Give the terminal a moment to fully reset after inquirer
+          await new Promise(resolve => setTimeout(resolve, 100));
         } else {
           throw error;
         }
       }
 
-      // Convert --history to boolean if it's a string
-      const historyEnabled = options.history === true || options.history === 'true';
+      // Convert --history to boolean - accept any value except false/'false'
+      const historyEnabled = options.history !== false && options.history !== 'false' && options.history !== undefined;
 
       if (options.simple) {
         const repl = new R2SQLREPL(config);

@@ -23,7 +23,9 @@
       "Bash(timeout 3 bin/r2sql-shell-macos:*)",
       "Bash(timeout 2 /Users/mselwan/Documents/r2sql-shell/bin/r2sql-shell-macos:*)",
       "Bash(timeout 2 bin/r2sql-shell-macos:*)",
-      "Bash(timeout 2 ./bin/r2sql-shell-macos:*)"
+      "Bash(timeout 2 ./bin/r2sql-shell-macos:*)",
+      "Bash(npm run build:macos:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

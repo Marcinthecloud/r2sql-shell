@@ -5,18 +5,22 @@ import path from 'path';
 
 export class R2SQLClient {
   private config: R2SQLConfig;
-  private debugLog: fs.WriteStream;
+  private debugLog: fs.WriteStream | null = null;
 
   constructor(config: R2SQLConfig) {
     this.config = config;
-    // Create a debug log file
-    const logPath = path.join(process.cwd(), 'r2sql-debug.log');
-    this.debugLog = fs.createWriteStream(logPath, { flags: 'a' });
-    this.debug('\n\n=== NEW SESSION ===\n');
+    // Create a debug log file only if debug is enabled
+    if (config.debugEnabled) {
+      const logPath = path.join(process.cwd(), 'r2sql-debug.log');
+      this.debugLog = fs.createWriteStream(logPath, { flags: 'a' });
+      this.debug('\n\n=== NEW SESSION ===\n');
+    }
   }
 
   private debug(message: string) {
-    this.debugLog.write(`${new Date().toISOString()} - ${message}\n`);
+    if (this.debugLog) {
+      this.debugLog.write(`${new Date().toISOString()} - ${message}\n`);
+    }
   }
 
   async executeQuery(sql: string): Promise<R2SQLQueryResult> {

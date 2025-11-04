@@ -1,10 +1,20 @@
 # R2 SQL Shell
 
-An interactive TUI (Text User Interface) for querying R2 Data Catalog using R2 SQL. Built with TypeScript and featuring vim-style keyboard navigation.
+<div align="center">
+
+![logo](images/logo.png)
+
+</div>
+
+An interactive TUI (Text User Interface) for querying R2 Data Catalog using R2 SQL. Built with TypeScript and featuring vim-style keyboard navigation. UI inspiration from [rainfrog](https://github.com/achristmascarl/rainfrog) - an excellent SQL client with a beautiful TUI. When R2 SQL becomes more feature complete, there's a good chance I'll create a driver for rainfrog.
+
+<div align="center">
+
+![Demo](images/demo.gif)
+
+</div>
 
 ## Features
-
-### TUI Mode (Default)
 - **Split-pane interface** with sidebar and main workspace
 - **Vim-style navigation** with navigation/insert modes and h/j/k/l keys
 - **Expandable tree view** for namespaces and tables
@@ -16,13 +26,6 @@ An interactive TUI (Text User Interface) for querying R2 Data Catalog using R2 S
 - **copy/paste** hit `c` to copy as JSON and `m` to copy the result as a markdown formatted table
 - **Syntax formatting** (Ctrl+F to format SQL)
 - **Query history** with quick access (Alt+4)
-
-### Simple Mode (--simple flag)
-- **Traditional REPL** with readline interface
-- **Auto-completion** for SQL keywords, namespaces, and tables
-- **Query history** stored locally for easy recall
-- **Smart formatting** with nicely formatted tables
-- **Query metadata** showing row counts, execution time, and bytes scanned
 
 ## Prerequisites
 
@@ -158,7 +161,8 @@ Options:
   --bucket <name>          R2 Bucket Name
   --token <token>          Cloudflare API Token
   -e, --execute <query>    Execute a SQL query on startup
-  --history [enabled]      Save query history to r2-sql-history.txt (default: false)
+  --history [enabled]      Save query history to r2sql-history.txt (default: false)
+  --debug                  Enable debug logging to r2sql-debug.log (default: false)
   --tui                    Use TUI mode (default)
   --simple                 Use simple REPL mode instead of TUI
   -h, --help               List of commands
@@ -185,7 +189,7 @@ r2sql --simple
 
 # Combine options
 r2sql --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN \
-      -e "SELECT * FROM logs LIMIT 5" --history
+      -e "SELECT * FROM default.logs LIMIT 5" --history
 ```
 
 ### First Time Setup
@@ -296,36 +300,14 @@ In TUI mode, write queries in the editor and press `Ctrl+E`:
 ```sql
 -- Simple SELECT (type in query editor, press Ctrl+E)
 SELECT * FROM my_namespace.my_table LIMIT 10;
-
--- Aggregations
-SELECT status, COUNT(*) as count
-FROM my_namespace.my_table
-GROUP BY status;
-
--- Filtering
-SELECT * FROM my_namespace.my_table
-WHERE created_at > '2024-01-01'
-ORDER BY created_at DESC;
 ```
+Remember to consult the current R2 SQL limitations 
 
 In simple mode, just type and press Enter:
 
 ```sql
 r2sql> SELECT * FROM my_namespace.my_table LIMIT 10;
 ```
-
-### Features in Action
-
-**Auto-completion**: Press TAB to auto-complete SQL keywords, table names, and namespaces.
-
-**Query History**: Use UP/DOWN arrow keys to navigate through your query history.
-
-**Automatic Charts**: The shell will automatically display charts for:
-- Time series data (date/time column + numeric values)
-- Categorical data (text column + numeric values)
-
-**Helpful Error Messages**: Errors include suggestions based on common issues.
-
 ## R2 SQL Limitations
 
 R2 SQL has some limitations compared to standard SQL. Be aware of:
@@ -335,6 +317,7 @@ R2 SQL has some limitations compared to standard SQL. Be aware of:
 - Specific data type support
 
 See the [R2 SQL documentation](https://developers.cloudflare.com/r2-sql/reference/limitations-best-practices/) for details.
+
 
 ## Development
 
@@ -432,10 +415,6 @@ If the TUI doesn't render correctly:
 - Some terminal emulators may capture certain key combinations
 - Try using alternative keys (e.g., if Alt+2 doesn't work, focus the query editor with `h` then `l`)
 
-**Namespaces not loading**
-- Check your API token has correct permissions
-- Run `node test-connection.js` to verify connectivity
-
 ## Built With
 
 - [TypeScript](https://www.typescriptlang.org/)
@@ -448,7 +427,7 @@ If the TUI doesn't render correctly:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request/Issues.
 
 ## License
 
@@ -458,4 +437,4 @@ MIT
 
 This project was built with [Claude Code](https://claude.com/claude-code), Anthropic's agentic coding tool. The development process and architecture decisions are documented in `CLAUDE.md`.
 
-UI inspiration from [rainfrog](https://github.com/achristmascarl/rainfrog) - an excellent SQL client with a beautiful TUI.
+UI inspiration from [rainfrog](https://github.com/achristmascarl/rainfrog) - an excellent SQL client with a beautiful TUI. When R2 SQL becomes more feature complete, there's a good chance I'll create a driver for rainfrog. 

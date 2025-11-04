@@ -1,15 +1,30 @@
 import fetch, { RequestInit } from 'node-fetch';
 import { R2SQLConfig, IcebergNamespace, IcebergTable, TableMetadata } from './types.js';
+import fs from 'fs';
+import path from 'path';
 
 export class IcebergCatalogClient {
   private config: R2SQLConfig;
   private baseUrl: string;
   private prefix: string | null = null;
   private initialized: boolean = false;
+  private debugLog: fs.WriteStream | null = null;
 
   constructor(config: R2SQLConfig) {
     this.config = config;
     this.baseUrl = config.catalogEndpoint;
+
+    // Create a debug log file only if debug is enabled
+    if (config.debugEnabled) {
+      const logPath = path.join(process.cwd(), 'r2sql-debug.log');
+      this.debugLog = fs.createWriteStream(logPath, { flags: 'a' });
+    }
+  }
+
+  private debug(message: string) {
+    if (this.debugLog) {
+      this.debugLog.write(`${new Date().toISOString()} - [Iceberg] ${message}\n`);
+    }
   }
 
   private async initialize(): Promise<void> {
@@ -44,7 +59,7 @@ export class IcebergCatalogClient {
       }
     } catch (error) {
       // Ignore config errors and continue without prefix
-      console.error('Warning: Could not fetch catalog config:', error instanceof Error ? error.message : String(error));
+      this.debug(`Warning: Could not fetch catalog config: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     this.initialized = true;
@@ -66,6 +81,10 @@ export class IcebergCatalogClient {
     // Build full URL
     const fullUrl = `${this.baseUrl}${finalPath}`;
 
+    this.debug(`\n=== ICEBERG REQUEST ===`);
+    this.debug(`URL: ${fullUrl}`);
+    this.debug(`Method: ${options?.method || 'GET'}`);
+
     try {
       const response = await fetch(fullUrl, {
         ...options,
@@ -77,13 +96,19 @@ export class IcebergCatalogClient {
         },
       });
 
+      this.debug(`Response Status: ${response.status} ${response.statusText}`);
+
       if (!response.ok) {
         const errorText = await response.text();
+        this.debug(`Error Response: ${errorText}`);
         throw new Error(`Iceberg API error: ${response.status} ${errorText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      this.debug(`Response: ${JSON.stringify(result, null, 2)}`);
+      return result;
     } catch (error) {
+      this.debug(`Request failed: ${error instanceof Error ? error.message : String(error)}`);
       throw new Error(`Failed to call Iceberg API: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
@@ -97,10 +122,11 @@ export class IcebergCatalogClient {
     } catch (error) {
       // 404 might mean no namespaces exist yet, which is OK - silently return empty array
       if (error instanceof Error && error.message.includes('404')) {
+        this.debug('No namespaces found (404)');
         return [];
       }
       // Only log non-404 errors
-      console.error('Error listing namespaces:', error);
+      this.debug(`Error listing namespaces: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -114,7 +140,7 @@ export class IcebergCatalogClient {
       const tables: IcebergTable[] = result.identifiers || [];
       return tables.map(t => t.name);
     } catch (error) {
-      console.error(`Error listing tables in namespace ${namespace}:`, error);
+      this.debug(`Error listing tables in namespace ${namespace}: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -133,7 +159,7 @@ export class IcebergCatalogClient {
         fullMetadata: result.metadata, // Include the full Iceberg metadata
       };
     } catch (error) {
-      console.error(`Error getting metadata for table ${namespace}.${tableName}:`, error);
+      this.debug(`Error getting metadata for table ${namespace}.${tableName}: ${error instanceof Error ? error.message : String(error)}`);
       return null;
     }
   }

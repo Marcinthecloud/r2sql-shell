@@ -2329,7 +2329,7 @@ export class R2SQLTUI {
 
   private saveQueryToHistoryFile(query: string) {
     try {
-      const historyPath = path.join(process.cwd(), 'r2-sql-history.txt');
+      const historyPath = path.join(process.cwd(), 'r2sql-history.txt');
       const timestamp = new Date().toISOString();
       const entry = `[${timestamp}] ${query}\n`;
       fs.appendFileSync(historyPath, entry, 'utf-8');

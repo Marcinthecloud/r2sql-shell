@@ -4,6 +4,7 @@ export interface R2SQLConfig {
   apiToken: string;
   warehouse: string;
   catalogEndpoint: string;
+  debugEnabled?: boolean;
 }
 
 export interface R2SQLQueryResult {
