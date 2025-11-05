@@ -1,19 +1,33 @@
 // Import blessed - handle both ESM and CJS contexts
 import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
 
 // In CJS bundle, import.meta.url will be undefined, so we use __filename as fallback
 let blessed: any;
 try {
-  const requireFunc = typeof import.meta.url !== 'undefined'
-    ? createRequire(import.meta.url)
-    : typeof __filename !== 'undefined'
-    ? createRequire(__filename)
-    : require;
+  let requireFunc: any;
+
+  // Check if we're in ESM context with import.meta.url
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    requireFunc = createRequire(import.meta.url);
+  }
+  // Check if we're in CJS context with __filename
+  else if (typeof __filename !== 'undefined') {
+    requireFunc = createRequire(__filename);
+  }
+  // Last resort: use global require
+  else {
+    requireFunc = require;
+  }
+
   blessed = requireFunc('blessed');
-} catch {
-  // Fallback for edge cases
-  blessed = require('blessed');
+} catch (error) {
+  // Fallback for edge cases - try direct require
+  try {
+    blessed = require('blessed');
+  } catch {
+    // If all else fails, try dynamic import (shouldn't happen but safety net)
+    throw new Error('Failed to load blessed module');
+  }
 }
 
 import { R2SQLClient } from './r2sql-client.js';
@@ -42,6 +56,9 @@ export class R2SQLTUI {
   private tabBar: any;
   private historyList: any;
   private autocompleteBox: any;
+  private r2sqlArtBox: any;
+  private artAnimationInterval: NodeJS.Timeout | null = null;
+  private artColorIndex: number = 0;
 
   // State
   private mode: Mode = 'navigation';
@@ -110,7 +127,7 @@ export class R2SQLTUI {
       },
       keys: true,
       vi: true,
-      mouse: true,
+      mouse: false, // Disable mouse to prevent escape sequences
       scrollable: true,
       scrollbar: {
         ch: '█',
@@ -150,7 +167,7 @@ export class R2SQLTUI {
         label: { fg: 'cyan', bold: true },
       },
       keys: true,
-      mouse: true,
+      mouse: false, // Disable mouse to prevent escape sequences
       scrollable: true,
       inputOnFocus: true, // Enable input on focus so cursor shows
       editor: null, // Disable built-in editor to prevent Ctrl+E from opening it
@@ -179,7 +196,7 @@ export class R2SQLTUI {
       },
       keys: true,
       vi: true,
-      mouse: true,
+      mouse: false, // Disable mouse to prevent escape sequences
       hidden: true,
       label: ' Autocomplete ',
     });
@@ -212,7 +229,7 @@ export class R2SQLTUI {
       },
       keys: true,
       vi: true,
-      mouse: true,
+      mouse: false, // Disable mouse to prevent escape sequences
       hidden: true,
     });
 
@@ -240,7 +257,22 @@ export class R2SQLTUI {
       },
       keys: true,
       vi: true,
-      mouse: true,
+      mouse: false, // Disable mouse to prevent escape sequences
+    });
+
+    // R2 SQL ASCII art box (small, top right corner of results pane)
+    this.r2sqlArtBox = blessed.box({
+      parent: this.resultsTable,
+      top: 0,
+      right: 1,
+      width: 10,
+      height: 3,
+      tags: true,
+      content: this.getAsciiArt('#F38020'),
+      style: {
+        fg: 'white',
+        bg: 'default',
+      },
     });
 
     // Status bar
@@ -274,7 +306,7 @@ export class R2SQLTUI {
         label: { fg: '#F38020', bold: true },
       },
       keys: true,
-      mouse: true,
+      mouse: false, // Disable mouse to prevent escape sequences
       inputOnFocus: true,
       hidden: true,
     });
@@ -752,9 +784,16 @@ export class R2SQLTUI {
       this.resultsTable.setLabel(' Results <3> {yellow-fg}(executing...){/}');
       this.resultsTable.setContent('{yellow-fg}Executing query...{/}');
       this.queryEditor.setLabel(' Query <2> {yellow-fg}(running...){/}');
+
+      // Start ASCII art animation
+      this.startArtAnimation();
+
       this.screen.render();
 
       const result = await this.sqlClient.executeQuery(query);
+
+      // Stop animation
+      this.stopArtAnimation();
 
       // Reset query label
       this.queryEditor.setLabel(' Query <2> ');
@@ -777,6 +816,9 @@ export class R2SQLTUI {
 
       this.screen.render();
     } catch (error) {
+      // Stop animation on error
+      this.stopArtAnimation();
+
       this.queryEditor.setLabel(' Query <2> ');
       this.showError('Query execution failed: ' + (error instanceof Error ? error.message : String(error)));
     }
@@ -2339,7 +2381,42 @@ export class R2SQLTUI {
     }
   }
 
+  private getAsciiArt(color: string): string {
+    // Small, simple ASCII art for R2 SQL
+    return `{${color}-fg}┏━━━━━━━┓
+┃R2 SQL ┃
+┗━━━━━━━┛{/}`;
+  }
+
+  private startArtAnimation() {
+    // Stop any existing animation
+    this.stopArtAnimation();
+
+    // Colors to cycle through
+    const colors = ['#F38020', 'yellow', 'cyan', 'magenta', 'green', 'red'];
+
+    // Update every 200ms for smooth animation
+    this.artAnimationInterval = setInterval(() => {
+      this.artColorIndex = (this.artColorIndex + 1) % colors.length;
+      const currentColor = colors[this.artColorIndex];
+      this.r2sqlArtBox.setContent(this.getAsciiArt(currentColor));
+      this.screen.render();
+    }, 200);
+  }
+
+  private stopArtAnimation() {
+    if (this.artAnimationInterval) {
+      clearInterval(this.artAnimationInterval);
+      this.artAnimationInterval = null;
+    }
+    // Reset to default orange color
+    this.r2sqlArtBox.setContent(this.getAsciiArt('#F38020'));
+    this.artColorIndex = 0;
+  }
+
   private quit() {
+    // Clean up animation on quit
+    this.stopArtAnimation();
     return process.exit(0);
   }
 

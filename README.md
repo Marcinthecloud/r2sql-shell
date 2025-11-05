@@ -39,7 +39,46 @@ An interactive TUI (Text User Interface) for querying R2 Data Catalog using R2 S
 
 ## Configuration
 
-Create a `.env` file in the project root with your Cloudflare credentials:
+### Authentication Options
+
+r2sql-shell offers multiple ways to authenticate with Cloudflare, making it easy to get started:
+
+#### Option 1: Interactive Setup (Recommended) 🚀
+
+The easiest way to get started! Just run:
+
+```bash
+r2sql-shell login
+```
+
+This will:
+1. Ask for your Cloudflare Account ID
+2. Ask if you have an R2 API token, or help you create one
+3. Open your browser to Cloudflare's R2 API tokens page (if needed)
+4. Guide you to create a token with **Admin Read & Write** permissions
+5. Ask for your R2 bucket name
+6. Store everything securely in `~/.r2sql-shell/config.json` (file permissions: 0600)
+7. **Automatically start the shell!**
+
+Your credentials are saved, so next time just run `r2sql-shell`
+
+You can always override the bucket with: `r2sql-shell --bucket other-bucket`
+
+You can check your authentication status anytime:
+
+```bash
+r2sql-shell status
+```
+
+To logout and remove all stored credentials:
+
+```bash
+r2sql-shell logout
+```
+
+#### Option 2: Environment Variables
+
+Create a `.env` file in the project root:
 
 ```bash
 cp .env.example .env
@@ -53,15 +92,36 @@ R2_BUCKET_NAME=your_bucket_name_here
 CLOUDFLARE_API_TOKEN=your_api_token_here
 ```
 
-OR simply start `r2sql-shell` for the first time to set it up
+#### Option 3: Command-Line Arguments
+
+Pass credentials directly when starting the shell:
+
+```bash
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN
+```
+
+#### Option 4: Interactive Prompts
+
+Simply start r2sql-shell without any configuration and you'll be prompted for your credentials interactively.
+
+### Authentication Priority
+
+r2sql-shell checks for credentials in this order:
+1. r2sql-shell stored config (`~/.r2sql-shell/config.json`)
+2. `CLOUDFLARE_API_TOKEN` environment variable
+3. `.env` file configuration
+4. Command-line arguments (`--token`)
+5. Interactive prompts
+
+**Note:** The `--bucket` flag always overrides the stored bucket name, allowing you to easily switch between buckets.
 
 ### Getting Your Credentials
 
 1. **Account ID**: Found in your Cloudflare dashboard URL or on the right side of the dashboard
 2. **Bucket Name**: The name of your R2 bucket with Data Catalog enabled
-3. **API Token**: Create one at https://dash.cloudflare.com/profile/api-tokens
-   - Use the "Create Custom Token" option
-   - Add the permissions listed above
+3. **R2 API Token**: Create one at https://dash.cloudflare.com/?to=/:account/r2/api-tokens
+   - Select **Admin Read & Write** permissions
+   - This gives access to R2 SQL and related services
 
 ## Installation
 
@@ -103,59 +163,17 @@ brew install r2sql-shell
 
    Now you can run `r2sql-shell` from anywhere!
 
-### Download Pre-built Binary (Coming Soon)
-
-Download the latest release for your platform from the [releases page](https://github.com/marcinthecloud/r2sql-shell/releases):
-- macOS (Intel/Apple Silicon)
-- Linux (x64)
-- Windows (x64)
-
-## Quick Start
-
-### Option 1: Interactive Setup (Easiest)
-
-Just run the command and you'll be prompted for your credentials:
-
-```bash
-r2sql-shell
-# or if running from source:
-npm start
-```
-
-### Option 2: Using Command-Line Arguments
-
-```bash
-r2sql-shell --account-id YOUR_ACCOUNT_ID --bucket YOUR_BUCKET --token YOUR_API_TOKEN
-```
-
-### Option 3: Using Environment Variables
-
-Create a `.env` file:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your credentials:
-
-```env
-CLOUDFLARE_ACCOUNT_ID=your_account_id_here
-R2_BUCKET_NAME=your_bucket_name_here
-CLOUDFLARE_API_TOKEN=your_api_token_here
-```
-
-Then run:
-
-```bash
-r2sql-shell
-```
-
 ## Usage
 
-### Command-Line Options
+### Commands
 
 ```bash
-r2sql-shell [options]
+r2sql-shell [command] [options]
+
+Commands:
+  login                    Authenticate with Cloudflare using OAuth
+  logout                   Remove stored authentication credentials
+  status                   Check authentication status
 
 Options:
   --account-id <id>        Cloudflare Account ID
@@ -173,24 +191,34 @@ Options:
 ### Starting the Shell
 
 ```bash
-# Start with interactive prompt for credentials
-r2sql-shell
+# Authenticate first (one-time setup)
+r2sql-shell login
 
-# Start in TUI mode with credentials
-r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN
+# Check authentication status
+r2sql-shell status
+
+# Start the shell with stored credentials
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET
 
 # Execute a query on startup
-r2sql-shell -e "SELECT * FROM my_namespace.my_table LIMIT 10"
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET \
+      -e "SELECT * FROM my_namespace.my_table LIMIT 10"
 
 # Enable query history logging
-r2sql-shell --history
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --history
 
 # Start in simple REPL mode
-r2sql-shell --simple
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --simple
 
 # Combine options
-r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN \
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET \
       -e "SELECT * FROM default.logs LIMIT 5" --history
+
+# Or use full credentials if not using OAuth
+r2sql-shell --account-id YOUR_ID --bucket YOUR_BUCKET --token YOUR_TOKEN
+
+# Logout when done
+r2sql-shell logout
 ```
 
 ### First Time Setup
