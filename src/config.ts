@@ -1,26 +1,44 @@
 import dotenv from 'dotenv';
 import inquirer from 'inquirer';
 import { R2SQLConfig } from './types.js';
+import { AuthService } from './auth-service.js';
 
 dotenv.config();
 
-export function loadConfig(options?: {
+export async function loadConfig(options?: {
   accountId?: string;
   bucketName?: string;
   apiToken?: string;
   debugEnabled?: boolean;
-}): R2SQLConfig {
-  const accountId = options?.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
-  const bucketName = options?.bucketName || process.env.R2_BUCKET_NAME;
-  const apiToken = options?.apiToken || process.env.CLOUDFLARE_API_TOKEN;
+}): Promise<R2SQLConfig> {
+  // Priority: CLI args > stored config > env vars
+  // CLI --bucket flag always overrides stored bucket
+  let accountId = options?.accountId || await AuthService.getStoredAccountId() || process.env.CLOUDFLARE_ACCOUNT_ID;
+  let bucketName = options?.bucketName || await AuthService.getStoredBucketName() || process.env.R2_BUCKET_NAME;
+
+  // Try to get API token from multiple sources with priority chain
+  let apiToken = options?.apiToken;
+
+  // If no token provided via options, try the auth service
+  if (!apiToken) {
+    const authToken = await AuthService.getAuthToken();
+    if (authToken) {
+      apiToken = authToken.accessToken;
+    }
+  }
 
   if (!accountId || !bucketName || !apiToken) {
     throw new Error(
       'Missing required configuration. Please provide:\n' +
-      '  - CLOUDFLARE_ACCOUNT_ID (--account-id)\n' +
-      '  - R2_BUCKET_NAME (--bucket)\n' +
-      '  - CLOUDFLARE_API_TOKEN (--token)\n\n' +
-      'Either set these in a .env file or pass them as command line arguments.'
+      '  - CLOUDFLARE_ACCOUNT_ID\n' +
+      '  - R2_BUCKET_NAME\n' +
+      '  - CLOUDFLARE_API_TOKEN\n\n' +
+      'Easy setup:\n' +
+      '  1. Run `r2sql-shell login` - this will guide you through setup\n' +
+      '     and store everything for future use (recommended)\n\n' +
+      'Alternative methods:\n' +
+      '  2. Set environment variables in a .env file\n' +
+      '  3. Pass credentials as command line arguments'
     );
   }
 
