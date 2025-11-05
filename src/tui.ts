@@ -1167,34 +1167,53 @@ export class R2SQLTUI {
         return;
       }
 
-      // Use platform-specific clipboard command
-      const { exec } = await import('child_process');
-      const { promisify } = await import('util');
-      const execAsync = promisify(exec);
+      // Use platform-specific clipboard command - use require instead of import for pkg compatibility
+      let spawn: any;
+      try {
+        const cp = require('child_process');
+        spawn = cp.spawn;
+      } catch (error) {
+        throw new Error(`Failed to load child_process: ${error}`);
+      }
 
       let command: string;
+      let args: string[] = [];
+
       if (process.platform === 'darwin') {
         command = 'pbcopy';
       } else if (process.platform === 'win32') {
         command = 'clip';
       } else {
         // Linux - try xclip first, fallback to xsel
-        try {
-          await execAsync('which xclip');
-          command = 'xclip -selection clipboard';
-        } catch {
-          command = 'xsel --clipboard --input';
-        }
+        command = 'xclip';
+        args = ['-selection', 'clipboard'];
       }
 
-      const child = exec(command);
-      child.stdin?.write(content);
-      child.stdin?.end();
+      let child: any;
+      try {
+        child = spawn(command, args);
+      } catch (error) {
+        throw new Error(`Failed to spawn ${command}: ${error}`);
+      }
+
+      try {
+        if (child.stdin) {
+          child.stdin.write(content);
+          child.stdin.end();
+        } else {
+          throw new Error('child.stdin is not available');
+        }
+      } catch (error) {
+        throw new Error(`Failed to write to stdin: ${error}`);
+      }
 
       await new Promise((resolve, reject) => {
-        child.on('exit', (code) => {
+        child.on('exit', (code: number) => {
           if (code === 0) resolve(null);
           else reject(new Error(`Copy command exited with code ${code}`));
+        });
+        child.on('error', (err: Error) => {
+          reject(new Error(`Process error: ${err.message}`));
         });
       });
 

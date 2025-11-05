@@ -2,7 +2,7 @@ class R2sqlShell < Formula
   desc "Interactive shell for querying R2 Data Catalog with R2 SQL"
   homepage "https://github.com/marcinthecloud/r2sql-shell"
   url "https://github.com/marcinthecloud/r2sql-shell/releases/download/1.1.0/r2sql-shell-macos"
-  sha256 "edac479a3acce97ac9045ee3830d77c553d567c0c04577d209d18392a8ae773a"  # Run: shasum -a 256 bin/r2sql-shell-macos
+  sha256 "342e1aaa15793bfa5f5482404bd1938264202889be5fc84a64a3ee8854b4e148"  # Run: shasum -a 256 bin/r2sql-shell-macos
   version "1.1.0"
   license "MIT"
 
